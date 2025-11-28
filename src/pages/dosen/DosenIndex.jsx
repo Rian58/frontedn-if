@@ -1,15 +1,15 @@
 import { Link } from "react-router-dom";
 import { ArrowLeftCircle } from "lucide-react";
-import { allDosen } from "../../data/dosenData";
 import { motion } from "framer-motion";
+import useFetch from "../../hooks/useFetch";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.6, ease: "easeOut" }
-  }
+    transition: { duration: 0.6, ease: "easeOut" },
+  },
 };
 
 const gridContainer = {
@@ -18,9 +18,9 @@ const gridContainer = {
     opacity: 1,
     transition: {
       staggerChildren: 0.1,
-      delayChildren: 0.2
-    }
-  }
+      delayChildren: 0.2,
+    },
+  },
 };
 
 const cardItem = {
@@ -29,12 +29,28 @@ const cardItem = {
     opacity: 1,
     y: 0,
     scale: 1,
-    transition: { duration: 0.5, ease: "easeOut" }
-  }
+    transition: { duration: 0.5, ease: "easeOut" },
+  },
 };
 
 const DosenIndex = () => {
-  if (!allDosen || allDosen.length === 0) {
+  const { data: responseData, loading, error } = useFetch("/dosen?limit=100");
+
+  const dosenList = Array.isArray(responseData)
+    ? responseData
+    : responseData?.data && Array.isArray(responseData.data)
+    ? responseData.data
+    : [];
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (error || dosenList.length === 0) {
     return (
       <div className="py-24 bg-white min-h-screen relative flex flex-col items-center justify-center text-center px-4">
         <Link
@@ -47,7 +63,9 @@ const DosenIndex = () => {
         </Link>
 
         <h1 className="text-4xl font-bold text-primary mb-4">Oops!</h1>
-        <p className="text-xl text-gray-600">Data dosen tidak dapat dimuat.</p>
+        <p className="text-xl text-gray-600">
+          Data dosen tidak dapat dimuat atau belum tersedia.
+        </p>
 
         <Link
           to="/"
@@ -88,36 +106,40 @@ const DosenIndex = () => {
         </motion.div>
 
         <motion.div
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 max-w-7xl mx-auto"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto"
           variants={gridContainer}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, amount: 0.1 }}
         >
-          {allDosen.map((dosen) => (
+          {dosenList.map((dosen) => (
             <motion.div
               key={dosen.id}
               variants={cardItem}
-              className="bg-white shadow-md hover:shadow-xl transition-all overflow-hidden hover:-translate-y-1 border-b-4 border-secondary"
+              className="group bg-white shadow-md hover:shadow-xl transition-all overflow-hidden hover:-translate-y-1 border-b-4 border-secondary relative rounded-2xl"
             >
-              <div className="relative">
+              <div className="relative overflow-hidden h-full">
                 <img
-                  src={dosen.foto}
+                  src={
+                    dosen.foto_url ||
+                    "https://placehold.co/400x500/cccccc/ffffff?text=No+Image"
+                  }
                   alt={dosen.nama}
-                  className="w-full h-72 object-cover"
+                  className="w-full h-96 object-cover transition-transform duration-500 group-hover:scale-105"
                   onError={(e) => {
                     e.target.onerror = null;
                     e.target.src =
-                      "https://placehold.co/400x288/cccccc/ffffff?text=Foto+Dosen";
+                      "https://placehold.co/400x500/cccccc/ffffff?text=Foto+Dosen";
                   }}
                 />
 
-                <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-primary via-primary/80 to-transparent flex flex-col justify-end items-start text-white p-5">
-                  <h3 className="text-base font-semibold drop-shadow-md">
+                <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-primary via-primary/90 to-transparent pt-28 pb-5 px-5 flex flex-col justify-end">
+                  <h3 className="text-base font-bold text-white leading-snug mb-1 drop-shadow-md line-clamp-1">
                     {dosen.nama}
                   </h3>
-                  <p className="text-sm text-gray-200">{dosen.jabatan}</p>
-                  line 151
+                  <p className="text-xs text-gray-200 font-medium leading-relaxed opacity-90 line-clamp-1">
+                    {dosen.nip ? `NIP. ${dosen.nip}` : "Dosen Tetap"}
+                  </p>
                 </div>
               </div>
             </motion.div>

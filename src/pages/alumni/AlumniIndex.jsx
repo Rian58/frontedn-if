@@ -1,16 +1,15 @@
 import { Link } from "react-router-dom";
 import { ArrowLeftCircle } from "lucide-react";
-import { allAlumni } from "../../data/alumniData";
 import { motion } from "framer-motion";
+import useFetch from "../../hooks/useFetch";
 
-// --- Variants Animasi ---
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.6, ease: "easeOut" }
-  }
+    transition: { duration: 0.6, ease: "easeOut" },
+  },
 };
 
 const gridContainer = {
@@ -19,9 +18,9 @@ const gridContainer = {
     opacity: 1,
     transition: {
       staggerChildren: 0.1,
-      delayChildren: 0.2
-    }
-  }
+      delayChildren: 0.2,
+    },
+  },
 };
 
 const cardItem = {
@@ -30,12 +29,32 @@ const cardItem = {
     opacity: 1,
     y: 0,
     scale: 1,
-    transition: { duration: 0.5, ease: "easeOut" }
-  }
+    transition: { duration: 0.5, ease: "easeOut" },
+  },
 };
 
 const AlumniIndex = () => {
-  if (!allAlumni || allAlumni.length === 0) {
+  const {
+    data: responseData,
+    loading,
+    error,
+  } = useFetch("/prestasi?limit=100");
+
+  const alumniList = Array.isArray(responseData)
+    ? responseData
+    : responseData?.data && Array.isArray(responseData.data)
+    ? responseData.data
+    : [];
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (error || alumniList.length === 0) {
     return (
       <div className="py-24 bg-white min-h-screen relative flex flex-col items-center justify-center text-center px-4">
         <Link
@@ -48,7 +67,9 @@ const AlumniIndex = () => {
         </Link>
 
         <h1 className="text-4xl font-bold text-primary mb-4">Oops!</h1>
-        <p className="text-xl text-gray-600">Data alumni tidak dapat dimuat.</p>
+        <p className="text-xl text-gray-600">
+          Data mahasiswa berprestasi tidak dapat dimuat atau belum tersedia.
+        </p>
 
         <Link
           to="/"
@@ -62,7 +83,6 @@ const AlumniIndex = () => {
 
   return (
     <div className="py-24 bg-white min-h-screen relative overflow-hidden">
-      {/* Tombol Kembali */}
       <Link
         to="/"
         aria-label="Kembali ke Halaman Utama"
@@ -73,7 +93,6 @@ const AlumniIndex = () => {
       </Link>
 
       <div className="container mx-auto px-4">
-        {/* Judul Halaman */}
         <motion.div
           className="text-center mb-16"
           variants={fadeUp}
@@ -82,15 +101,14 @@ const AlumniIndex = () => {
           viewport={{ once: true, amount: 0.5 }}
         >
           <h1 className="text-4xl md:text-5xl font-bold text-primary mb-4">
-            Alumni Kami
+            Mahasiswa Berprestasi
           </h1>
           <p className="text-xl text-gray-600">
-            Jejak Lulusan Prodi Informatika Universitas Pancasakti Tegal
+            Kebanggaan Prodi Informatika Universitas Pancasakti Tegal
           </p>
           <div className="w-24 h-1 bg-secondary mx-auto mt-6"></div>
         </motion.div>
 
-        {/* Grid Kartu Alumni */}
         <motion.div
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto"
           variants={gridContainer}
@@ -98,31 +116,34 @@ const AlumniIndex = () => {
           whileInView="visible"
           viewport={{ once: true, amount: 0.1 }}
         >
-          {allAlumni.map((alumnus) => (
+          {alumniList.map((alumnus) => (
             <motion.div
               key={alumnus.id}
               variants={cardItem}
-              className="bg-white shadow-md hover:shadow-xl transition-all overflow-hidden hover:-translate-y-1"
+              className="group bg-white shadow-md hover:shadow-xl transition-all overflow-hidden hover:-translate-y-1 border-b-4 border-secondary relative rounded-2xl"
             >
-              <div className="relative">
+              <div className="relative overflow-hidden h-full">
                 <img
-                  src={alumnus.foto}
+                  src={
+                    alumnus.foto_url ||
+                    "https://placehold.co/400x500/cccccc/ffffff?text=No+Image"
+                  }
                   alt={alumnus.nama}
-                  className="w-full h-72 object-cover"
+                  className="w-full h-96 object-cover transition-transform duration-500 group-hover:scale-105"
                   onError={(e) => {
                     e.target.onerror = null;
-                    e.target.src = `https://placehold.co/400x288/cccccc/ffffff?text=Foto+${alumnus.nama.split(" ")[0]}`;
+                    e.target.src =
+                      "https://placehold.co/400x500/cccccc/ffffff?text=Foto+Mahasiswa";
                   }}
                 />
 
-                <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-secondary via-secondary/80 to-transparent flex flex-col justify-end items-start text-primary p-5">
-                  <h3 className="text-base font-semibold drop-shadow-sm">
+                <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-secondary via-secondary/90 to-transparent pt-28 pb-5 px-5 flex flex-col justify-end">
+                  <h3 className="text-base font-bold text-primary leading-snug mb-1 drop-shadow-sm line-clamp-1">
                     {alumnus.nama}
                   </h3>
-                  <p className="text-sm text-blue-900 font-medium">
-                    {alumnus.pekerjaan}
+                  <p className="text-xs text-blue-900 font-medium leading-relaxed opacity-90 line-clamp-2">
+                    {alumnus.kejuaraan || alumnus.message}
                   </p>
-                  content...
                 </div>
               </div>
             </motion.div>

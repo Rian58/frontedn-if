@@ -12,13 +12,6 @@ const Maintenance = () => {
     return () => clearInterval(timer);
   }, []);
 
-  // Format waktu
-  const formatTime = (seconds) => {
-    const m = Math.floor(seconds / 60);
-    const s = seconds % 60;
-    return `${m}:${s < 10 ? "0" : ""}${s}`;
-  };
-
   return (
     <div className="min-h-screen bg-primary flex items-center justify-center p-6">
       <div className="max-w-md mx-auto text-center text-white animate-fadeIn">
@@ -37,17 +30,9 @@ const Maintenance = () => {
 
         {/* Pesan */}
         <p className="text-lg text-gray-200 leading-relaxed mb-4">
-          We are upgrading our system to serve you better. Please check back later.
+          We are upgrading our system to serve you better. Please check back
+          later.
         </p>
-
-        {/* Waktu Perkiraan */}
-        {timeLeft > 0 ? (
-          <p className="text-sm text-gray-300 mb-6">
-            Estimated time remaining: <span className="font-bold">{formatTime(timeLeft)}</span>
-          </p>
-        ) : (
-          <p className="text-sm text-gray-300 mb-6">Almost done! Try refreshing the page.</p>
-        )}
 
         {/* Tombol Refresh */}
         <button
