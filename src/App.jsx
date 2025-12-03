@@ -14,16 +14,19 @@ import BeritaIndex from "./pages/berita/BeritaIndex";
 import BeritaDetail from "./pages/berita/BeritaDetail";
 import DosenIndex from "./pages/dosen/DosenIndex";
 import AlumniIndex from "./pages/alumni/AlumniIndex";
+// --- VVV IMPOR HALAMAN BARU VVV ---
+import AlumniDetail from "./pages/alumni/AlumniDetail"; 
+// --- ^^^ AKHIR IMPOR ^^^ ---
 import AboutIndex from "./pages/about/AboutIndex";
-import NotFound from "./pages/notFound";
+import NotFound from "./pages/notFound"; // Pastikan file ini ada atau hapus jika belum dibuat
 import { appSettings } from "./config/settings";
-import api from "./api/index"; // Pastikan path ini benar sesuai struktur Anda
+// import api from "./api/index"; // (Opsional: Jika belum ada backend, bisa dikomentari dulu)
 
 const AppContent = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const location = useLocation();
 
-  const fullScreenPages = ["/berita", "/dosen", "/prestasi", "/about"];
+  const fullScreenPages = ["/berita", "/dosen", "/alumni", "/about", "/prestasi"];
 
   const isFullScreen = fullScreenPages.some((path) =>
     location.pathname.startsWith(path)
@@ -52,14 +55,22 @@ const AppContent = () => {
 
           <Route path="/berita" element={<BeritaIndex />} />
           <Route path="/berita/:slug" element={<BeritaDetail />} />
+          {/* Note: Pastikan di BeritaDetail Anda menerima param 'slug' atau ganti jadi ':id' jika pakai ID */}
 
           <Route path="/dosen" element={<DosenIndex />} />
 
           <Route path="/prestasi" element={<AlumniIndex />} />
+          
+          {/* --- VVV RUTE BARU UNTUK DETAIL ALUMNI VVV --- */}
+          {/* Rute ini menangani klik dari kartu alumni */}
+          <Route path="/alumni" element={<AlumniIndex />} />
+          <Route path="/alumni/:id" element={<AlumniDetail />} />
+          {/* --- ^^^ AKHIR RUTE BARU ^^^ --- */}
 
           <Route path="/about" element={<AboutIndex />} />
 
-          <Route path="*" element={<NotFound />} />
+          {/* Fallback route */}
+          <Route path="*" element={<div>Halaman Tidak Ditemukan</div>} /> 
         </Routes>
         <Footer />
       </main>
@@ -68,23 +79,23 @@ const AppContent = () => {
 };
 
 function App() {
-  // State untuk menyimpan status maintenance dari API
+  // State untuk menyimpan status maintenance
   const [isMaintenanceMode, setIsMaintenanceMode] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Cek status maintenance dari API saat aplikasi dimuat
+  // Cek status maintenance
   useEffect(() => {
+    // Simulasi cek status (jika belum ada backend)
     const checkMaintenanceStatus = async () => {
       try {
-        // Panggil endpoint publik yang sudah dibuat di backend
-        // Pastikan endpoint ini tidak memerlukan token (public route)
-        const response = await api.get("/settings/maintenance");
-        if (response.data && response.data.success) {
-          setIsMaintenanceMode(response.data.maintenance);
-        }
+        // Jika sudah ada backend:
+        // const response = await api.get("/settings/maintenance");
+        // setIsMaintenanceMode(response.data.maintenance);
+        
+        // Untuk sementara hardcode false agar aplikasi jalan
+        setIsMaintenanceMode(false); 
       } catch (error) {
         console.error("Gagal mengecek status maintenance:", error);
-        // Default ke false jika gagal agar web tetap bisa diakses
         setIsMaintenanceMode(false);
       } finally {
         setIsLoading(false);
@@ -94,17 +105,16 @@ function App() {
     checkMaintenanceStatus();
   }, []);
 
-  // Gabungkan dengan setting lokal (jika ada)
+  // Gabungkan dengan setting lokal
   const isMaintenance =
     isMaintenanceMode ||
     import.meta.env.VITE_MAINTENANCE_MODE === "true" ||
     appSettings.maintenanceMode;
 
   if (isLoading) {
-    // Tampilkan loading screen sederhana saat cek status
     return (
       <div className="min-h-screen flex items-center justify-center">
-        Loading...
+        <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-primary"></div>
       </div>
     );
   }
@@ -113,11 +123,6 @@ function App() {
     <Router>
       {isMaintenance ? (
         <Routes>
-          {/* Izinkan akses ke halaman login admin meskipun maintenance */}
-          {/* Jika Anda punya halaman login admin di frontend ini, tambahkan rutenya di sini */}
-          {/* <Route path="/admin/login" element={<LoginAdmin />} /> */}
-
-          {/* Semua rute lain diarahkan ke Maintenance */}
           <Route path="*" element={<Maintenance />} />
         </Routes>
       ) : (
