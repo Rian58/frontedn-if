@@ -55,14 +55,13 @@ const AppContent = () => {
 
           <Route path="/berita" element={<BeritaIndex />} />
           <Route path="/berita/:slug" element={<BeritaDetail />} />
-          {/* Note: Pastikan di BeritaDetail Anda menerima param 'slug' atau ganti jadi ':id' jika pakai ID */}
+          
 
           <Route path="/dosen" element={<DosenIndex />} />
 
           <Route path="/prestasi" element={<AlumniIndex />} />
           
-          {/* --- VVV RUTE BARU UNTUK DETAIL ALUMNI VVV --- */}
-          {/* Rute ini menangani klik dari kartu alumni */}
+          
           <Route path="/alumni" element={<AlumniIndex />} />
           <Route path="/alumni/:id" element={<AlumniDetail />} />
           {/* --- ^^^ AKHIR RUTE BARU ^^^ --- */}
