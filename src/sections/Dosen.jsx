@@ -1,7 +1,8 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import useFetch from "../hooks/useFetch";
+import useFetch from "../hooks/useFetch"; // 1. Menggunakan Custom Hook
 
+// --- Varian Animasi ---
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
   visible: {
@@ -33,45 +34,60 @@ const cardItem = {
 };
 
 const Dosen = () => {
-  // 1. Ambil 'data' mentah dari useFetch (namakan responseData agar tidak bingung)
+  // 2. Fetching Data (Best Practice)
+  // Kita mengambil data dari endpoint /dosen
   const { data: responseData, loading, error } = useFetch("/dosen");
 
-  if (loading) {
-    return (
-      <section id="dosen" className="py-20 bg-gray-50 overflow-hidden">
-        <div className="container mx-auto px-4 text-center">
-          <p className="text-gray-500">Memuat data dosen...</p>
-        </div>
-      </section>
-    );
-  }
-
-  if (error) {
-    return null;
-  }
-
-  // 2. PERBAIKAN PENTING: Pastikan kita mengambil Array-nya
-  // Cek apakah responseData itu array? Jika ya, pakai.
-  // Jika tidak, cek apakah dia punya properti .data (seperti format backend kita)? Jika ya, pakai itu.
-  // Jika tidak keduanya, pakai array kosong [].
+  // 3. Normalisasi Data
+  // Memastikan data selalu berupa array untuk mencegah error .map
   const dosenList = Array.isArray(responseData)
     ? responseData
     : responseData?.data && Array.isArray(responseData.data)
     ? responseData.data
     : [];
 
-  // 3. Sekarang aman untuk di-slice karena dosenList pasti Array
-  const displayDosen = dosenList.slice(0, 4);
+  // 4. Slice Data (Hanya ambil 4 untuk Halaman Utama)
+  const featuredLecturers = dosenList.slice(0, 4);
 
+  // --- Tampilan Loading (Skeleton Sederhana) ---
+  if (loading) {
+    return (
+      <section className="py-20 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <div className="h-10 w-64 bg-gray-200 rounded mx-auto mb-4 animate-pulse"></div>
+            <div className="h-6 w-32 bg-gray-200 rounded mx-auto animate-pulse"></div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
+            {[1, 2, 3, 4].map((i) => (
+              <div
+                key={i}
+                className="h-96 bg-gray-200 rounded-2xl animate-pulse"
+              ></div>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // --- Tampilan Error (Sembunyikan Section atau Tampilkan Pesan) ---
+  if (error || featuredLecturers.length === 0) {
+    // Return null untuk menyembunyikan section jika data gagal dimuat agar tidak merusak tampilan home
+    return null;
+  }
+
+  // --- Tampilan Utama ---
   return (
     <section id="dosen" className="py-20 bg-gray-50 overflow-hidden">
       <div className="container mx-auto px-4">
+        {/* Judul Section */}
         <motion.div
+          className="text-center mb-16"
           variants={fadeUp}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, amount: 0.5 }}
-          className="text-center mb-16"
         >
           <h2 className="text-3xl md:text-4xl font-bold text-primary mb-4">
             MEET OUR
@@ -80,53 +96,69 @@ const Dosen = () => {
           <div className="w-20 h-1 bg-secondary mx-auto mt-4"></div>
         </motion.div>
 
+        {/* Grid Card Dosen */}
         <motion.div
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto"
           variants={gridContainer}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, amount: 0.1 }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 max-w-7xl mx-auto"
         >
-          {displayDosen.map((dosen) => (
+          {featuredLecturers.map((lecturer) => (
             <motion.div
-              key={dosen.id}
+              key={lecturer.id}
               variants={cardItem}
-              className="bg-white shadow-md hover:shadow-xl transition-all overflow-hidden hover:-translate-y-1 border-b-4 border-secondary"
+              // Style Kartu: Rounded-2xl, Shadow, Border Bawah Kuning
+              className="group bg-white shadow-md hover:shadow-xl transition-all overflow-hidden hover:-translate-y-1 border-b-4 border-secondary relative rounded-2xl max-w-xs mx-auto sm:max-w-none w-full"
             >
-              <div className="relative group">
-                <img
-                  src={
-                    dosen.foto_url ||
-                    "https://placehold.co/400x288/cccccc/ffffff?text=No+Image"
-                  }
-                  alt={dosen.nama}
-                  className="w-full h-72 object-cover"
-                  onError={(e) => {
-                    e.target.onerror = null;
-                    e.target.src =
-                      "https://placehold.co/400x288/cccccc/ffffff?text=Foto+Dosen";
-                  }}
-                />
+              {/* Link ke Detail Dosen */}
+              <Link
+                to={`/dosen/${lecturer.id}`}
+                className="block h-full w-full"
+              >
+                <div className="relative overflow-hidden h-full">
+                  {/* Gambar */}
+                  <img
+                    src={
+                      lecturer.foto_url ||
+                      lecturer.foto ||
+                      lecturer.photo ||
+                      "https://placehold.co/400x500/cccccc/ffffff?text=No+Image"
+                    }
+                    alt={lecturer.nama}
+                    className="w-full h-96 object-cover transition-transform duration-500 group-hover:scale-105"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src =
+                        "https://placehold.co/400x500/cccccc/ffffff?text=Foto+Dosen";
+                    }}
+                  />
 
-                <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-primary via-primary/80 to-transparent flex flex-col justify-end items-start text-white p-4 translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
-                  <h3 className="text-base font-semibold drop-shadow-md line-clamp-1">
-                    {dosen.nama}
-                  </h3>
-                  <p className="text-xs text-gray-200 line-clamp-1 mt-1">
-                    {dosen.message || "Dosen Informatika"}
-                  </p>
+                  {/* Overlay Gradasi & Teks */}
+                  <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-primary via-primary/90 to-transparent pt-28 pb-5 px-5 flex flex-col justify-end">
+                    {/* Nama Dosen */}
+                    <h3 className="text-base font-bold text-white leading-snug mb-1 drop-shadow-md">
+                      {lecturer.nama || lecturer.name}
+                    </h3>
+
+                    {/* Jabatan */}
+                    <p className="text-xs text-gray-200 font-medium leading-relaxed opacity-90">
+                      {lecturer.jabatan || lecturer.position || "Dosen"}
+                    </p>
+                  </div>
                 </div>
-              </div>
+              </Link>
             </motion.div>
           ))}
         </motion.div>
 
+        {/* Tombol Lihat Semua */}
         <motion.div
+          className="text-center mt-14"
           variants={fadeUp}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, amount: 0.5 }}
-          className="text-center mt-14"
         >
           <Link
             to="/dosen"

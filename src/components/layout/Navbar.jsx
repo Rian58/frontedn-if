@@ -1,9 +1,18 @@
 import { useState, useEffect } from "react";
 import {
-  Menu, X, ChevronsLeft, ChevronsRight,
-  Home, Info, Users, GraduationCap,
-  Briefcase, Newspaper, Image, Mail,
-  Target // <-- IKON DITAMBAHKAN DI SINI
+  Menu,
+  X,
+  ChevronsLeft,
+  ChevronsRight,
+  Home,
+  Info,
+  Users,
+  GraduationCap,
+  Briefcase,
+  Newspaper,
+  Image,
+  Mail,
+  Target, // <-- IKON DITAMBAHKAN DI SINI
 } from "lucide-react";
 
 const Navbar = ({ onToggleCollapse }) => {
@@ -20,15 +29,13 @@ const Navbar = ({ onToggleCollapse }) => {
     { name: "Dosen", href: "#dosen", icon: GraduationCap },
     { name: "Alumni", href: "#alumni", icon: Briefcase },
     { name: "Berita", href: "#berita", icon: Newspaper },
-    
+
     { name: "Kontak", href: "#kontak", icon: Mail },
   ];
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 10);
     window.addEventListener("scroll", handleScroll);
-
-    
 
     if (onToggleCollapse) onToggleCollapse(isCollapsed);
 
@@ -40,12 +47,11 @@ const Navbar = ({ onToggleCollapse }) => {
           }
         });
       },
-      
+
       { root: null, rootMargin: "0px 0px -70% 0px", threshold: 0.1 }
     );
 
     navItems.forEach((item) => {
-      
       const section = document.querySelector(item.href);
       if (section) observer.observe(section);
     });
@@ -55,8 +61,7 @@ const Navbar = ({ onToggleCollapse }) => {
       // window.removeEventListener("hashchange", handleHashChange);
       observer.disconnect();
     };
-    
-  }, [isCollapsed, onToggleCollapse]); 
+  }, [isCollapsed, onToggleCollapse]);
 
   const handleCollapse = () => {
     const newState = !isCollapsed;
@@ -65,21 +70,16 @@ const Navbar = ({ onToggleCollapse }) => {
   };
 
   const handleLinkClick = (e, href) => {
-    
     e.preventDefault();
 
-    
     const section = document.querySelector(href);
 
     if (section) {
-      
       section.scrollIntoView({ behavior: "smooth" });
     }
 
-    
     window.history.pushState(null, null, href);
 
-    
     setIsSidebarOpen(false);
   };
 
@@ -87,7 +87,6 @@ const Navbar = ({ onToggleCollapse }) => {
 
   return (
     <>
-      
       {!isSidebarOpen && (
         <button
           className={`fixed top-4 left-4 z-50 p-2 rounded-lg lg:hidden transition-all ${
@@ -101,10 +100,11 @@ const Navbar = ({ onToggleCollapse }) => {
         </button>
       )}
 
-      
       <aside
         className={`fixed top-0 left-0 h-full ${sidebarWidthClass} shadow-xl z-40 bg-white transition-all duration-300
-        ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`}
+        ${
+          isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+        } lg:translate-x-0`}
       >
         {/* Header Sidebar */}
         <div className="relative flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-blue-800">
@@ -123,17 +123,19 @@ const Navbar = ({ onToggleCollapse }) => {
             </div>
           )}
 
-          
           <button
             className={`hidden lg:flex p-1 rounded text-white hover:bg-blue-700 transition ${
               isCollapsed ? "mx-auto" : ""
             }`}
             onClick={handleCollapse}
           >
-            {isCollapsed ? <ChevronsRight size={24} /> : <ChevronsLeft size={24} />}
+            {isCollapsed ? (
+              <ChevronsRight size={24} />
+            ) : (
+              <ChevronsLeft size={24} />
+            )}
           </button>
 
-          
           {isSidebarOpen && (
             <button
               className="absolute right-3 top-3 lg:hidden flex items-center justify-center bg-white/10 hover:bg-white/20 text-white rounded-full p-2 transition"

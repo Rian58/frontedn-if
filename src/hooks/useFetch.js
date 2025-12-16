@@ -18,7 +18,7 @@ const useFetch = (endpoint, options = {}) => {
         }
       } catch (err) {
         console.error(`Error Fetching ${endpoint}`, err);
-        setError(err.message || "Terjaidi kesalahan saat mengambil data");
+        setError(err.message || "Terjadi kesalahan saat mengambil data");
       } finally {
         setLoading(false);
       }
